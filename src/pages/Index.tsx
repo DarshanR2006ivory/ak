@@ -104,13 +104,13 @@ const Index = () => {
     <div className="min-h-screen bg-background font-sans">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/75 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 text-xl font-bold text-primary animate-slide-left">
+          <Link to="/" className="flex items-center gap-3 text-xl font-bold text-primary">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-warm text-primary-foreground shadow-soft">
               AI
             </span>
             <span className="font-accent tracking-tight">{t("appName")}</span>
           </Link>
-          <div className="flex items-center gap-3 animate-slide-right">
+          <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link to="/auth">
               <Button variant="ghost" size="sm" className="font-accent">
@@ -131,7 +131,7 @@ const Index = () => {
           <img
             src={heroImg}
             alt="Indian rural landscape"
-            className="h-full w-full animate-hero-pan object-cover"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-[linear-gradient(115deg,hsl(130_45%_16%_/_0.78),hsl(28_72%_28%_/_0.42),transparent)]" />
           {slides.map((slide, index) => (
@@ -144,11 +144,11 @@ const Index = () => {
 
         <div className="grain-overlay container relative grid min-h-[720px] items-center gap-14 py-16 text-primary-foreground lg:grid-cols-[1.1fr_0.9fr]">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/90 backdrop-blur animate-slide-up">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/90 backdrop-blur">
               {currentSlide.eyebrow}
             </span>
 
-            <div key={activeSlide} className="animate-slide-up">
+            <div key={activeSlide}>
               <h1 className="mt-6 max-w-2xl font-display text-5xl font-extrabold leading-[0.95] text-balance md:text-7xl">
                 {currentSlide.title}
               </h1>
@@ -157,7 +157,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3 animate-slide-up" style={{ animationDelay: "120ms" }}>
+            <div className="mt-8 flex flex-wrap gap-3" style={{ animationDelay: "120ms" }}>
               {currentSlide.chips.map((chip) => (
                 <span
                   key={chip}
@@ -168,7 +168,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-3 animate-slide-up" style={{ animationDelay: "180ms" }}>
+            <div className="mt-10 flex flex-wrap gap-3" style={{ animationDelay: "180ms" }}>
               <Link to="/auth?mode=signup">
                 <Button size="lg" className="bg-white px-8 text-primary shadow-elevated hover:bg-white/90">
                   <span className="font-accent font-bold">{t("getStarted")}</span>
@@ -186,7 +186,7 @@ const Index = () => {
               </Link>
             </div>
 
-            <div className="mt-10 flex items-center gap-3 animate-slide-up" style={{ animationDelay: "240ms" }}>
+            <div className="mt-10 flex items-center gap-3" style={{ animationDelay: "240ms" }}>
               <button
                 type="button"
                 onClick={goToPrevSlide}
@@ -219,7 +219,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative animate-slide-left lg:justify-self-end">
+          <div className="relative lg:justify-self-end">
             <div className="absolute -left-10 top-12 hidden h-32 w-32 rounded-full bg-harvest/30 blur-3xl lg:block" />
             <div className="absolute -right-6 bottom-10 hidden h-36 w-36 rounded-full bg-white/15 blur-3xl lg:block" />
 
@@ -247,13 +247,13 @@ const Index = () => {
                     Large typography, stronger contrast and motion cues make the homepage easier to scan on mobile.
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-5 animate-float">
+                <div className="rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
                   <div className="font-accent text-xs uppercase tracking-[0.24em] text-white/62">Now showing</div>
                   <p className="mt-3 text-lg font-semibold text-white">{currentSlide.badge}</p>
                   <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/12">
                     <div
                       key={activeSlide}
-                      className="h-full rounded-full bg-white/90 animate-shimmer"
+                      className="h-full rounded-full bg-white/90"
                       style={{ width: "72%", backgroundSize: "200% 200%" }}
                     />
                   </div>
@@ -281,7 +281,7 @@ const Index = () => {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
         <div className="container grid grid-cols-1 gap-0 divide-y divide-border/60 md:grid-cols-3 md:divide-x md:divide-y-0">
           {stats.map((stat, index) => (
-            <div key={stat.value} className="px-6 py-10 text-center animate-slide-up" style={{ animationDelay: `${index * 90}ms` }}>
+            <div key={stat.value} className="px-6 py-10 text-center" style={{ animationDelay: `${index * 90}ms` }}>
               <div className="font-display text-4xl font-extrabold text-primary">{stat.value}</div>
               <div className="mx-auto mt-2 max-w-xs text-sm leading-6 text-muted-foreground">{stat.label}</div>
             </div>
@@ -290,7 +290,7 @@ const Index = () => {
       </section>
 
       <section className="container py-24">
-        <div className="mx-auto mb-14 max-w-3xl text-center animate-slide-up">
+        <div className="mx-auto mb-14 max-w-3xl text-center">
           <p className="font-accent text-sm uppercase tracking-[0.28em] text-primary">Beautiful, practical, mobile-first</p>
           <h2 className="mt-4 font-display text-4xl font-extrabold text-foreground md:text-6xl">
             A warmer, more animated front door for the product
@@ -304,7 +304,7 @@ const Index = () => {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-[1.75rem] border border-border/70 bg-white/70 p-6 shadow-soft backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-elevated animate-slide-up"
+              className="group rounded-[1.75rem] border border-border/70 bg-white/70 p-6 shadow-soft backdrop-blur transition-all duration-300 hover:-translate-y-2 hover:shadow-elevated"
               style={{ animationDelay: feature.delay }}
             >
               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-gradient-warm group-hover:text-primary-foreground">
@@ -320,7 +320,7 @@ const Index = () => {
       <section className="container pb-24">
         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-hero p-10 text-center text-primary-foreground shadow-elevated">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(0_0%_100%_/_0.2),transparent_35%)]" />
-          <div className="relative animate-slide-up">
+          <div className="relative">
             <p className="font-accent text-sm uppercase tracking-[0.3em] text-white/70">Ready to launch</p>
             <h2 className="mt-4 font-display text-3xl font-extrabold md:text-5xl">Give the website a stronger first impression</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-white/82">

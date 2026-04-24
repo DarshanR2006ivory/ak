@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { MessageCircle, FileText, Sprout, ShoppingBasket, Briefcase, AlertTriangle, ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight, Briefcase, FileText, MessageCircle, ShoppingBasket, Sprout } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
@@ -23,40 +23,49 @@ const Dashboard = () => {
   }, []);
 
   const tiles = [
-    { to: "/app/chat", icon: MessageCircle, title: t("aiChat"), desc: "Talk to your AI assistant", grad: "from-emerald-500 to-teal-600" },
-    { to: "/app/schemes", icon: FileText, title: t("schemes"), desc: `${stats.schemes} schemes available`, grad: "from-amber-500 to-orange-600" },
-    { to: "/app/farming", icon: Sprout, title: t("farming"), desc: "Upload a crop photo", grad: "from-lime-500 to-green-600" },
-    { to: "/app/mandi", icon: ShoppingBasket, title: t("mandi"), desc: `${stats.rates} community rates`, grad: "from-orange-500 to-red-500" },
-    { to: "/app/jobs", icon: Briefcase, title: t("jobs"), desc: `${stats.jobs} open positions`, grad: "from-blue-500 to-indigo-600" },
-    { to: "/app/alerts", icon: AlertTriangle, title: t("alerts"), desc: `${stats.alerts} active alerts`, grad: "from-rose-500 to-red-600" },
+    { to: "/app/chat", icon: MessageCircle, title: t("aiChat"), desc: "Ask anything in a calmer, more readable chat workspace.", grad: "from-emerald-500 to-teal-600" },
+    { to: "/app/schemes", icon: FileText, title: t("schemes"), desc: `${stats.schemes} schemes surfaced with simpler summaries.`, grad: "from-amber-500 to-orange-600" },
+    { to: "/app/farming", icon: Sprout, title: t("farming"), desc: "Upload a crop image for AI diagnosis and treatment steps.", grad: "from-lime-500 to-green-600" },
+    { to: "/app/mandi", icon: ShoppingBasket, title: t("mandi"), desc: `${stats.rates} shared prices with a fresher market overview.`, grad: "from-orange-500 to-red-500" },
+    { to: "/app/jobs", icon: Briefcase, title: t("jobs"), desc: `${stats.jobs} opportunities ranked around your qualifications.`, grad: "from-blue-500 to-indigo-600" },
+    { to: "/app/alerts", icon: AlertTriangle, title: t("alerts"), desc: `${stats.alerts} active warnings presented with stronger signal.`, grad: "from-rose-500 to-red-600" },
   ];
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-foreground">{t("welcome")} 👋</h1>
-        <p className="mt-1 text-muted-foreground">Choose a service to get started.</p>
+      <div className="page-header">
+        <span className="ambient-chip">Daily overview</span>
+        <h1 className="page-title">{t("welcome")}</h1>
+        <p className="page-subtitle">A more animated dashboard with warmer panels, clearer typography and faster paths into every rural service.</p>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {tiles.map((tile) => (
-          <Link key={tile.to} to={tile.to}>
-            <Card className="group relative overflow-hidden border-border bg-gradient-card p-6 shadow-soft transition-smooth hover:-translate-y-1 hover:shadow-elevated">
-              <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${tile.grad} text-white shadow-soft`}>
+        {tiles.map((tile, index) => (
+          <Link key={tile.to} to={tile.to} className="animate-slide-up" style={{ animationDelay: `${index * 70}ms` }}>
+            <Card className="ambient-panel group relative overflow-hidden p-6 transition-smooth hover:-translate-y-1 hover:shadow-elevated">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary/70 to-transparent opacity-0 transition group-hover:opacity-100" />
+              <div className={`mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${tile.grad} text-white shadow-soft`}>
                 <tile.icon className="h-6 w-6" />
               </div>
-              <h3 className="font-display text-lg font-semibold text-foreground">{tile.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{tile.desc}</p>
+              <h3 className="font-display text-xl font-semibold text-foreground">{tile.title}</h3>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">{tile.desc}</p>
               <ArrowRight className="absolute right-5 top-6 h-4 w-4 text-muted-foreground opacity-0 transition-smooth group-hover:translate-x-1 group-hover:opacity-100" />
             </Card>
           </Link>
         ))}
       </div>
 
-      <Card className="bg-gradient-warm p-6 text-primary-foreground shadow-glow">
-        <Badge variant="secondary" className="mb-3">Tip</Badge>
-        <h3 className="font-display text-xl font-bold">Try the AI assistant</h3>
-        <p className="mt-1 text-sm text-white/90">Ask in your own language about anything — farming techniques, scheme eligibility, weather advice and more.</p>
+      <Card className="ambient-panel-strong overflow-hidden p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Badge variant="secondary" className="mb-3 font-accent">Featured</Badge>
+            <h3 className="font-display text-2xl font-bold">Try the AI assistant first</h3>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-foreground/80">
+              It can explain scheme eligibility, crop symptoms, weather concerns and nearby work opportunities in a single conversation.
+            </p>
+          </div>
+          <div className="ambient-chip">Fast start</div>
+        </div>
       </Card>
     </div>
   );

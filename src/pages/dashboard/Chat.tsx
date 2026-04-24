@@ -5,47 +5,47 @@ import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-// Renders AI response as structured points
 const renderContent = (text: string) => {
-  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  const lines = text.split("\n").filter((line) => line.trim() !== "");
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      {lines.map((line, i) => {
+    <div className="space-y-2">
+      {lines.map((line, index) => {
         const trimmed = line.trim();
-        // Numbered list: "1. ..."
         const numbered = trimmed.match(/^(\d+)\.\s+(.+)/);
-        // Bullet: "- ..." or "* ..."
         const bullet = trimmed.match(/^[-*•]\s+(.+)/);
-        // Bold: **text**
         const formatBold = (str: string) => {
           const parts = str.split(/\*\*(.+?)\*\*/g);
-          return parts.map((p, j) => j % 2 === 1 ? <strong key={j}>{p}</strong> : p);
+          return parts.map((part, partIndex) => (partIndex % 2 === 1 ? <strong key={partIndex}>{part}</strong> : part));
         };
 
         if (numbered) {
           return (
-            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <span style={{ minWidth: 20, fontWeight: 700, color: "#16a34a" }}>{numbered[1]}.</span>
+            <div key={index} className="flex items-start gap-3">
+              <span className="min-w-5 font-accent font-bold text-primary">{numbered[1]}.</span>
               <span>{formatBold(numbered[2])}</span>
             </div>
           );
         }
+
         if (bullet) {
           return (
-            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <span style={{ minWidth: 16, color: "#16a34a", fontWeight: 700, marginTop: 1 }}>•</span>
+            <div key={index} className="flex items-start gap-3">
+              <span className="min-w-4 font-accent font-bold text-primary">•</span>
               <span>{formatBold(bullet[1])}</span>
             </div>
           );
         }
-        // Heading: "## ..."
+
         if (trimmed.startsWith("## ")) {
-          return <div key={i} style={{ fontWeight: 700, fontSize: 15, marginTop: 4 }}>{formatBold(trimmed.slice(3))}</div>;
+          return <div key={index} className="pt-1 font-accent text-sm font-bold uppercase tracking-[0.18em] text-primary">{formatBold(trimmed.slice(3))}</div>;
         }
+
         if (trimmed.startsWith("# ")) {
-          return <div key={i} style={{ fontWeight: 700, fontSize: 16, marginTop: 4 }}>{formatBold(trimmed.slice(2))}</div>;
+          return <div key={index} className="pt-1 font-display text-lg font-bold text-foreground">{formatBold(trimmed.slice(2))}</div>;
         }
-        return <div key={i}>{formatBold(trimmed)}</div>;
+
+        return <div key={index}>{formatBold(trimmed)}</div>;
       })}
     </div>
   );
@@ -63,7 +63,7 @@ const suggestions = [
 const Chat = () => {
   const { t, lang } = useI18n();
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Namaste! 🙏 I'm your rural assistant. Ask me about farming, schemes, weather, jobs — anything." },
+    { role: "assistant", content: "Namaste! I'm your rural assistant. Ask me about farming, schemes, weather, jobs, or daily village needs." },
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -77,6 +77,7 @@ const Chat = () => {
     if (e) e.preventDefault();
     const text = (overrideText ?? input).trim();
     if (!text || busy) return;
+
     const next: Msg[] = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
@@ -93,36 +94,59 @@ const Chat = () => {
         body: JSON.stringify({ messages: next, lang }),
       });
 
-      if (resp.status === 429) { toast.error("Too many requests, slow down."); setBusy(false); return; }
-      if (resp.status === 402) { toast.error("AI credits exhausted."); setBusy(false); return; }
-      if (!resp.ok || !resp.body) { toast.error("Chat failed"); setBusy(false); return; }
+      if (resp.status === 429) {
+        toast.error("Too many requests, slow down.");
+        setBusy(false);
+        return;
+      }
+      if (resp.status === 402) {
+        toast.error("AI credits exhausted.");
+        setBusy(false);
+        return;
+      }
+      if (!resp.ok || !resp.body) {
+        toast.error("Chat failed");
+        setBusy(false);
+        return;
+      }
 
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
       let acc = "";
-      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+      setMessages((current) => [...current, { role: "assistant", content: "" }]);
 
       let done = false;
       while (!done) {
-        const { value, done: d } = await reader.read();
-        if (d) break;
+        const { value, done: readDone } = await reader.read();
+        if (readDone) break;
         buf += decoder.decode(value, { stream: true });
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, nl);
-          buf = buf.slice(nl + 1);
+
+        let newlineIndex: number;
+        while ((newlineIndex = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, newlineIndex);
+          buf = buf.slice(newlineIndex + 1);
           if (line.endsWith("\r")) line = line.slice(0, -1);
           if (!line.startsWith("data: ")) continue;
+
           const json = line.slice(6).trim();
-          if (json === "[DONE]") { done = true; break; }
+          if (json === "[DONE]") {
+            done = true;
+            break;
+          }
+
           try {
-            const c = JSON.parse(json).choices?.[0]?.delta?.content;
-            if (c) {
-              acc += c;
-              setMessages((m) => m.map((msg, i) => (i === m.length - 1 ? { ...msg, content: acc } : msg)));
+            const chunk = JSON.parse(json).choices?.[0]?.delta?.content;
+            if (chunk) {
+              acc += chunk;
+              setMessages((current) =>
+                current.map((message, index) => (index === current.length - 1 ? { ...message, content: acc } : message)),
+              );
             }
-          } catch { buf = line + "\n" + buf; break; }
+          } catch {
+            buf = `${line}\n${buf}`;
+            break;
+          }
         }
       }
     } catch {
@@ -133,214 +157,122 @@ const Chat = () => {
   };
 
   return (
-    <>
-      <style>{`
-        .chat-layout {
-          display: grid;
-          grid-template-columns: 1fr 320px;
-          gap: 20px;
-          height: calc(100vh - 180px);
-        }
-        .chat-panel {
-          display: flex;
-          flex-direction: column;
-          background: var(--surface, #fff);
-          border: 1px solid var(--border, #e5e7eb);
-          border-radius: 12px;
-          overflow: hidden;
-        }
-        .chat-messages {
-          flex: 1;
-          overflow-y: auto;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .msg { display: flex; gap: 10px; }
-        .msg.user { flex-direction: row-reverse; }
-        .msg-bubble {
-          max-width: 70%;
-          padding: 12px 16px;
-          border-radius: 14px;
-          font-size: 14px;
-          line-height: 1.6;
-        }
-        .msg.bot .msg-bubble {
-          background: #f9fafb;
-          border: 1px solid #e5e7eb;
-          border-radius: 4px 14px 14px 14px;
-          color: #111827;
-        }
-        .msg.user .msg-bubble {
-          background: #16a34a;
-          color: #fff;
-          border-radius: 14px 4px 14px 14px;
-        }
-        .msg-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .bot-avatar { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-        .user-av { background: #f0fdfa; color: #0d9488; }
-        .chat-input-row {
-          padding: 14px 16px;
-          border-top: 1px solid #e5e7eb;
-          display: flex;
-          gap: 10px;
-        }
-        .chat-input {
-          flex: 1;
-          height: 44px;
-          border: 1.5px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 0 14px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
-          outline: none;
-          color: #111827;
-          background: #fff;
-        }
-        .chat-input:focus { border-color: #16a34a; }
-        .send-btn {
-          width: 44px;
-          height: 44px;
-          border-radius: 8px;
-          background: #16a34a;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          flex-shrink: 0;
-        }
-        .send-btn:hover { background: #14532d; }
-        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .chat-sidebar-panel {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          overflow-y: auto;
-        }
-        .chat-suggestions {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 16px;
-        }
-        .chat-suggestions h4 {
-          font-size: 13px;
-          font-weight: 600;
-          color: #6b7280;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-bottom: 10px;
-        }
-        .suggestion-btn {
-          display: block;
-          width: 100%;
-          text-align: left;
-          padding: 8px 12px;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          background: #fff;
-          cursor: pointer;
-          font-size: 13px;
-          color: #111827;
-          font-family: 'DM Sans', sans-serif;
-          margin-bottom: 6px;
-          transition: all 0.15s;
-        }
-        .suggestion-btn:hover { border-color: #16a34a; color: #14532d; background: #f0fdf4; }
-        .typing-dot {
-          display: inline-block;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #6b7280;
-          margin: 0 2px;
-          animation: blink 1.2s infinite;
-        }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink {
-          0%, 80%, 100% { opacity: 0; }
-          40% { opacity: 1; }
-        }
-        @media (max-width: 768px) {
-          .chat-layout { grid-template-columns: 1fr; }
-          .chat-sidebar-panel { display: none; }
-        }
-      `}</style>
-
-      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#16a34a,#0d9488)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Sparkles size={20} color="#fff" />
-        </div>
-        <div>
-          <h1 style={{ fontWeight: 700, fontSize: 22, margin: 0 }}>{t("aiChat")}</h1>
-          <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Powered by AI · Speaks your language</p>
+    <div className="space-y-6">
+      <div className="page-header">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-glow">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div>
+            <span className="page-kicker">AI conversation</span>
+            <h1 className="font-display text-4xl font-extrabold text-foreground">{t("aiChat")}</h1>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">A calmer chat box with richer typography, layered panels and friendlier reading rhythm.</p>
+          </div>
         </div>
       </div>
 
-      <div className="chat-layout">
-        {/* Chat panel */}
-        <div className="chat-panel">
-          <div className="chat-messages">
-            {messages.map((m, i) => (
-              <div key={i} className={`msg ${m.role === "user" ? "user" : "bot"}`}>
-                <div className={`msg-avatar ${m.role === "user" ? "user-av" : "bot-avatar"}`}>
-                  {m.role === "user" ? "U" : "🌾"}
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        <div className="ambient-panel-strong flex min-h-[70vh] flex-col overflow-hidden">
+          <div className="border-b border-border/50 px-6 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="font-accent text-xs uppercase tracking-[0.24em] text-primary">Live assistant</div>
+                <div className="mt-1 font-display text-xl font-semibold">Answers in a clearer, card-based chat flow</div>
+              </div>
+              <div className="ambient-chip">Responsive</div>
+            </div>
+          </div>
+
+          <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 md:px-6">
+            {messages.map((message, index) => (
+              <div key={index} className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                {message.role === "assistant" && (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-accent/15 font-accent text-sm font-bold text-primary">
+                    AI
+                  </div>
+                )}
+
+                <div
+                  className={`max-w-[85%] rounded-[1.5rem] px-4 py-3 text-sm leading-7 shadow-soft md:max-w-[72%] ${
+                    message.role === "user"
+                      ? "rounded-tr-md bg-primary text-primary-foreground"
+                      : "rounded-tl-md border border-white/60 bg-white/80 text-foreground backdrop-blur"
+                  }`}
+                >
+                  {message.content === "" && message.role === "assistant" ? (
+                    <div className="flex items-center gap-1 py-1">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60" />
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60 [animation-delay:150ms]" />
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60 [animation-delay:300ms]" />
+                    </div>
+                  ) : message.role === "assistant" ? (
+                    renderContent(message.content)
+                  ) : (
+                    message.content
+                  )}
                 </div>
-                <div className="msg-bubble">
-                  {m.content === "" && m.role === "assistant" ? (
-                    <span>
-                      <span className="typing-dot" />
-                      <span className="typing-dot" />
-                      <span className="typing-dot" />
-                    </span>
-                  ) : m.role === "assistant" ? renderContent(m.content) : m.content}
-                </div>
+
+                {message.role === "user" && (
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 font-accent text-sm font-bold text-teal-700">
+                    U
+                  </div>
+                )}
               </div>
             ))}
             <div ref={endRef} />
           </div>
-          <form className="chat-input-row" onSubmit={(e) => send(e)}>
-            <input
-              className="chat-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(null); } }}
-              placeholder={t("askAnything")}
-              maxLength={2000}
-            />
-            <button type="submit" className="send-btn" disabled={busy}>
-              <Send size={18} />
-            </button>
+
+          <form onSubmit={(e) => send(e)} className="border-t border-border/50 px-4 py-4 md:px-6">
+            <div className="flex gap-3">
+              <input
+                className="ambient-input h-12 flex-1 rounded-2xl border px-4 font-sans text-sm outline-none transition focus:border-primary"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send(null);
+                  }
+                }}
+                placeholder={t("askAnything")}
+                maxLength={2000}
+              />
+              <button
+                type="submit"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-warm text-white shadow-glow transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={busy}
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
           </form>
         </div>
 
-        {/* Sidebar */}
-        <div className="chat-sidebar-panel">
-          <div className="chat-suggestions">
-            <h4>Quick Questions</h4>
-            {suggestions.map((s) => (
-              <button key={s} className="suggestion-btn" onClick={() => send(null, s)}>
-                {s}
-              </button>
-            ))}
+        <div className="space-y-4">
+          <div className="ambient-panel p-5">
+            <h3 className="font-accent text-sm uppercase tracking-[0.24em] text-primary">Quick questions</h3>
+            <div className="mt-4 space-y-2">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  className="w-full rounded-2xl border border-white/55 bg-white/70 px-4 py-3 text-left text-sm leading-6 text-foreground transition hover:border-primary/40 hover:bg-secondary"
+                  onClick={() => send(null, suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="ambient-panel p-5" style={{ animationDelay: "100ms" }}>
+            <h3 className="font-display text-xl font-semibold">Why this feels better</h3>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              The chat page now uses softer surfaces, stronger hierarchy and more breathing room so long AI answers are easier to trust and read.
+            </p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

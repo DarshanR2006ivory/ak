@@ -115,6 +115,8 @@ All colors MUST be HSL.
       radial-gradient(circle at top, hsl(40 90% 80% / 0.18), transparent 30%),
       linear-gradient(180deg, hsl(var(--background)), hsl(38 45% 95%));
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -128,11 +130,87 @@ All colors MUST be HSL.
   h4 {
     letter-spacing: -0.03em;
   }
+
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: -15%;
+    pointer-events: none;
+    z-index: -2;
+  }
+
+  body::before {
+    background:
+      radial-gradient(circle at 18% 22%, hsl(40 90% 66% / 0.2), transparent 24%),
+      radial-gradient(circle at 78% 18%, hsl(130 52% 50% / 0.18), transparent 28%),
+      radial-gradient(circle at 52% 88%, hsl(28 85% 55% / 0.14), transparent 24%);
+    filter: blur(18px);
+    animation: ambient-float 22s ease-in-out infinite alternate;
+  }
+
+  body::after {
+    z-index: -1;
+    opacity: 0.5;
+    background-image:
+      linear-gradient(120deg, hsl(0 0% 100% / 0.05) 0%, transparent 45%, hsl(130 40% 40% / 0.05) 100%),
+      radial-gradient(circle at center, hsl(0 0% 100% / 0.08) 0 1px, transparent 1px);
+    background-size: 100% 100%, 26px 26px;
+    animation: ambient-grid 28s linear infinite;
+  }
 }
 
 @layer utilities {
+  .page-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .page-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(circle at top left, hsl(0 0% 100% / 0.55), transparent 30%),
+      linear-gradient(180deg, hsl(0 0% 100% / 0.34), hsl(0 0% 100% / 0.12));
+  }
+
   .bg-sunrise {
     background-image: var(--gradient-sunrise);
+  }
+
+  .page-header {
+    @apply mb-2;
+  }
+
+  .page-kicker {
+    @apply font-accent text-sm uppercase tracking-[0.28em] text-primary;
+  }
+
+  .page-title {
+    @apply mt-2 font-display text-4xl font-extrabold text-foreground md:text-5xl;
+  }
+
+  .page-subtitle {
+    @apply mt-3 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg;
+  }
+
+  .ambient-panel {
+    @apply rounded-[1.75rem] border border-white/60 bg-white/70 shadow-soft backdrop-blur-xl;
+  }
+
+  .ambient-panel-strong {
+    @apply rounded-[2rem] border border-white/60 bg-white/75 shadow-elevated backdrop-blur-xl;
+  }
+
+  .ambient-chip {
+    @apply inline-flex items-center rounded-full border border-white/50 bg-white/70 px-3 py-1 text-xs font-accent font-semibold uppercase tracking-[0.2em] text-primary shadow-soft;
+  }
+
+  .ambient-input {
+    @apply border-white/60 bg-white/80 backdrop-blur-sm;
   }
 
   .bg-river {
@@ -163,5 +241,29 @@ All colors MUST be HSL.
       radial-gradient(circle at 60% 80%, hsl(0 0% 100% / 0.16) 0 1px, transparent 1px);
     background-size: 18px 18px, 24px 24px, 22px 22px;
     mix-blend-mode: soft-light;
+  }
+}
+
+@keyframes ambient-float {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(2%, 1%, 0) scale(1.08);
+  }
+
+  100% {
+    transform: translate3d(-1%, 3%, 0) scale(1.03);
+  }
+}
+
+@keyframes ambient-grid {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(24px, 18px, 0);
   }
 }
